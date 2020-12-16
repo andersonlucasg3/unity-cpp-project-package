@@ -103,6 +103,13 @@ namespace UnityCpp.Editor
                 string fromFullPath = Path.Combine(extractedPath, pair.Key);
                 string toFullPath = Path.Combine(projectPath, pair.Value);
 
+                if (!Directory.Exists(toFullPath))
+                {
+                    Directory.CreateDirectory(toFullPath);
+                }
+
+                Debug.Log($"Moving contents from {fromFullPath} to {toFullPath}");
+                
                 CopyFilesRecursively(new DirectoryInfo(fromFullPath), new DirectoryInfo(toFullPath));
             }
         }
