@@ -46,8 +46,15 @@ namespace UnityCpp.Editor
             foreach (string className in classesNames)
             {
                 AddRegisterCall(className);
+                
+                Debug.Log($"Registered class: {className}");
             }
             _sourceFileStream.WriteLine("}");
+            
+            _sourceFileStream.Close();
+            _sourceFileStream = null;
+            
+            Debug.Log("---->>> Finished generating components registration");
         }
 
         private static void BeginSourceFile()
