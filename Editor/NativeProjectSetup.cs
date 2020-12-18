@@ -9,8 +9,8 @@ namespace UnityCpp.Editor
 {
     public static class NativeProjectSetup
     {
+        private const string _setupProjectMenuItem = "Assets/UnityCpp/Setup Project";
         private const string _githubRepoUri = "https://github.com/andersonlucasg3/unity-cpp-project/archive/main.zip";
-        private const string _setupProjectMenuItem = "Assets/UnityCpp Setup Project";
         private const string _temporaryFolderName = "CppProject";
         private const string _zipFileName = "github.zip";
         private const string _extractedDirectoryName = "unity-cpp-project-main";
