@@ -1,8 +1,5 @@
 ﻿using UnityEditor;
 using UnityEditor.PackageManager;
-using UnityEditor.PackageManager.Requests;
-using UnityEditor.PackageManager.UI;
-using UnityEditorInternal;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace UnityCpp.Editor
