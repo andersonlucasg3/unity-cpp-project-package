@@ -104,7 +104,7 @@ namespace UnityCpp.Editor
             }
 
             string outputCmakeLists = cmakeListsContents.Replace("#COMPONENTS_GO_HERE", string.Join("\n", outputNames));
-            File.WriteAllText(outputCmakeLists, cmakeListsPath);
+            File.WriteAllText(cmakeListsPath, outputCmakeLists);
         }
     }
 }
