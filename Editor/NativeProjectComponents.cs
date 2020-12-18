@@ -95,11 +95,11 @@ namespace UnityCpp.Editor
             
             string classesPath = _gameSourcesPath.Replace($"{_cppProjectPath}/", "");
             
-            for (int index = 0; index < outputNames.Length;)
+            for (int index = 0, indexNames = 0; index < outputNames.Length; indexNames++)
             {
-                outputNames[index] = $"{classesPath}/{classesNames[index]}.h";
+                outputNames[index] = $"{classesPath}/{classesNames[indexNames]}.h";
                 index++;
-                outputNames[index] = $"{classesPath}/{classesNames[index]}.cpp";
+                outputNames[index] = $"{classesPath}/{classesNames[indexNames]}.cpp";
                 index++;
             }
 
