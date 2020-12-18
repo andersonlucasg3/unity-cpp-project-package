@@ -97,9 +97,9 @@ namespace UnityCpp.Editor
             
             for (int index = 0, indexNames = 0; index < outputNames.Length; indexNames++)
             {
-                outputNames[index] = $"{classesPath}/{classesNames[indexNames]}.h";
+                outputNames[index] = $"\t\t{classesPath}/{classesNames[indexNames]}.h";
                 index++;
-                outputNames[index] = $"{classesPath}/{classesNames[indexNames]}.cpp";
+                outputNames[index] = $"\t\t{classesPath}/{classesNames[indexNames]}.cpp";
                 index++;
             }
 
