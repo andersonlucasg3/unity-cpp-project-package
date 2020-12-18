@@ -44,6 +44,10 @@ namespace UnityCpp.Editor
             }
             
             MoveProjectContent(extractedPath);
+            
+            Debug.Log("---->>> Finished project configuration.");
+            
+            NativeProjectComponents.GenerateNativeComponentsRegistration();
         }
 
         private static string DownloadRepository()
@@ -96,10 +100,10 @@ namespace UnityCpp.Editor
         {
             Debug.Log($"Extracted path: {extractedPath}");
 
+            string projectPath = Directory.GetParent(Application.dataPath).ToString();
+            
             foreach (KeyValuePair<string, string> pair in _directoriesToCopy)
             {
-                string projectPath = Directory.GetParent(Application.dataPath).ToString();
-
                 string fromFullPath = Path.Combine(extractedPath, pair.Key);
                 string toFullPath = Path.Combine(projectPath, pair.Value);
 
