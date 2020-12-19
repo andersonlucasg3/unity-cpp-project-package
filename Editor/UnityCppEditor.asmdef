@@ -1,5 +1,5 @@
 {
-    "name": "UnityCppPackage",
+    "name": "UnityCppEditor",
     "references": [],
     "includePlatforms": [
         "Editor"
