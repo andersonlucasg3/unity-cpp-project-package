@@ -54,7 +54,7 @@ namespace UnityCpp.NativeBridge.Reflection
         private static bool TryGetMember(IntPtr typePtr, string name, MemberType memberType, out MemberInfo memberInfo)
         {
             Type type = ConvertPtrTo<Type>(typePtr);
-            const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
             switch (memberType)
             {
                 case MemberType.field: memberInfo = type.GetField(name, flags); break;
