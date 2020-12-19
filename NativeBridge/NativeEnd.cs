@@ -1,34 +1,29 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using UnityCpp.Loader;
-using UnityCpp.NativeBridge.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace UnityCpp.NativeBridge
 {
-    [DefaultExecutionOrder(-100000)]
-    public class NativeEntryPoint : MonoBehaviour
+    [DefaultExecutionOrder(100000)]
+    public class NativeEnd : MonoBehaviour
     {
         private static readonly List<IntPtr> _allocatedNativePointers = new List<IntPtr>();
-        
         private IntPtr _nativeAssemblyHandle = IntPtr.Zero;
 
+#if UNITY_EDITOR
         private void Awake()
         {
-            string assemblyPath =  NativeConstants.GetAssemblyPath();
-            Debug.Log($"Searching for native library in {assemblyPath}");
-
-            _nativeAssemblyHandle = NativeAssembly.Load(assemblyPath);
-            if (_nativeAssemblyHandle == IntPtr.Zero)
+            EditorApplication.playModeStateChanged += change =>
             {
-                Debug.Log($"Failed to load native assembly {assemblyPath}");
-                return;
-            }
-            
-            NativeMethods.Initialize(_nativeAssemblyHandle);
+                if (change == PlayModeStateChange.ExitingPlayMode)
+                {
+                    Destroy(gameObject);
+                }
+            };
         }
+#endif
 
         private void OnDestroy()
         {
@@ -38,12 +33,24 @@ namespace UnityCpp.NativeBridge
                 NativeMethods.destroyNativeMonoBehaviour.Invoke(nativePointer);
             }
 
+            NativeMethods.DeInitialize(_nativeAssemblyHandle);
+
             if (!NativeAssembly.Unload(_nativeAssemblyHandle))
             {
                 Debug.Log("Something went wrong unloading native code handle.");
             }
         }
 
+        private void OnApplicationQuit()
+        {
+            Destroy(gameObject);
+        }
+
+        public void SetNativeHandle(IntPtr handle)
+        {
+            _nativeAssemblyHandle = handle;
+        }
+        
         public static void AddNativePointer(IntPtr nativePointer)
         {
             _allocatedNativePointers.Add(nativePointer);

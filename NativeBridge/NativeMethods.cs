@@ -44,6 +44,7 @@ namespace UnityCpp.NativeBridge
         
         private delegate void NativeVoidMethod();
         private static NativeVoidMethod _initializeNative;
+        private static NativeVoidMethod _deInitializeNative;
 
         #endregion
         
@@ -160,6 +161,12 @@ namespace UnityCpp.NativeBridge
             
             _initializeNative = NativeAssembly.GetMethod<NativeVoidMethod>(assemblyHandle, "InitializeNative");
             _initializeNative.Invoke();
+        }
+
+        public static void DeInitialize(IntPtr assemblyHandle)
+        {
+            _deInitializeNative = NativeAssembly.GetMethod<NativeVoidMethod>(assemblyHandle, "DeInitializeNative");
+            _deInitializeNative.Invoke();
         }
         
         #region Implementations
