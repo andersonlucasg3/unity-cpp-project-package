@@ -14,15 +14,7 @@ namespace UnityCpp.Editor
         private const string _temporaryFolderName = "CppProject";
         private const string _zipFileName = "github.zip";
         private const string _extractedDirectoryName = "unity-cpp-project-main";
-        private const string _csharpUnityCppPath = "Assets/UnityCpp";
 
-        private static readonly Dictionary<string, string> _directoriesToCopy = new Dictionary<string, string>
-        {
-            { "CppSource", "CppSource" },
-            { $"{_csharpUnityCppPath}/Loader", $"{_csharpUnityCppPath}/Loader" },
-            { $"{_csharpUnityCppPath}/NativeBridge", $"{_csharpUnityCppPath}/NativeBridge" }
-        };
-        
         [MenuItem(_setupProjectMenuItem)]
         private static void SetupProject()
         {
@@ -102,20 +94,17 @@ namespace UnityCpp.Editor
 
             string projectPath = Directory.GetParent(Application.dataPath).ToString();
             
-            foreach (KeyValuePair<string, string> pair in _directoriesToCopy)
+            string fromFullPath = Path.Combine(extractedPath, "CppSource");
+            string toFullPath = Path.Combine(projectPath, "CppSource");
+
+            if (!Directory.Exists(toFullPath))
             {
-                string fromFullPath = Path.Combine(extractedPath, pair.Key);
-                string toFullPath = Path.Combine(projectPath, pair.Value);
-
-                if (!Directory.Exists(toFullPath))
-                {
-                    Directory.CreateDirectory(toFullPath);
-                }
-
-                Debug.Log($"Moving contents from {fromFullPath} to {toFullPath}");
-                
-                CopyFilesRecursively(new DirectoryInfo(fromFullPath), new DirectoryInfo(toFullPath));
+                Directory.CreateDirectory(toFullPath);
             }
+
+            Debug.Log($"Moving contents from {fromFullPath} to {toFullPath}");
+                
+            CopyFilesRecursively(new DirectoryInfo(fromFullPath), new DirectoryInfo(toFullPath));
         }
         
         private static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target) {
