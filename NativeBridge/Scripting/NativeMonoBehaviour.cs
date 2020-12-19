@@ -9,7 +9,6 @@ namespace UnityCpp.NativeBridge.Scripting
     {
         [SerializeField] private string _nativeClassName = default;
         
-        private int _nativeIndex = -1;
         private IntPtr _nativeInstance = IntPtr.Zero;
         private IntPtr _managedPointer = IntPtr.Zero;
 
@@ -25,7 +24,7 @@ namespace UnityCpp.NativeBridge.Scripting
             _managedPointer = ReflectionHelpers.AllocObjectPtr(bridge);
             
             _nativeInstance = NativeMethods.createNativeMonoBehaviour.Invoke(_nativeClassName, _managedPointer);
-            _nativeIndex = NativeEntryPoint.AddNativePointer(_nativeInstance);
+            NativeEntryPoint.AddNativePointer(_nativeInstance);
             
             if (_nativeInstance == IntPtr.Zero)
             {
@@ -39,10 +38,8 @@ namespace UnityCpp.NativeBridge.Scripting
         private void OnDestroy()
         {
             NativeMethods.monoBehaviourOnDestroy.Invoke(_nativeInstance);
+            NativeEntryPoint.RemoveNativePointer(_nativeInstance);
             ReflectionHelpers.DeallocPtr(_managedPointer);
-            
-            if (_nativeIndex == -1) return;
-            NativeEntryPoint.RemoveNativePointer(_nativeIndex);
         }
 
         private void Start()

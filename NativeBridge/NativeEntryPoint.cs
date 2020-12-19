@@ -44,15 +44,14 @@ namespace UnityCpp.NativeBridge
             }
         }
 
-        public static int AddNativePointer(IntPtr nativePointer)
+        public static void AddNativePointer(IntPtr nativePointer)
         {
             _allocatedNativePointers.Add(nativePointer);
-            return _allocatedNativePointers.Count - 1;
         }
 
-        public static void RemoveNativePointer(int index)
+        public static void RemoveNativePointer(IntPtr nativePointer)
         {
-            _allocatedNativePointers.RemoveAt(index);
+            _allocatedNativePointers.Remove(nativePointer);
         }
     }
 }
