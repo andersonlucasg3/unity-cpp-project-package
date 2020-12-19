@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace UnityCpp.NativeBridge
 {
+    [DefaultExecutionOrder(-100000)]
     public class NativeEntryPoint : MonoBehaviour
     {
         private IntPtr _nativeAssemblyHandle = IntPtr.Zero;
