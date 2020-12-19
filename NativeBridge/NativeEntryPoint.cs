@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using UnityCpp.Loader;
+using UnityCpp.NativeBridge.Reflection;
 using UnityEngine;
 
 namespace UnityCpp.NativeBridge
@@ -7,8 +11,10 @@ namespace UnityCpp.NativeBridge
     [DefaultExecutionOrder(-100000)]
     public class NativeEntryPoint : MonoBehaviour
     {
-        private IntPtr _nativeAssemblyHandle = IntPtr.Zero;
+        private static readonly List<IntPtr> _allocatedNativePointers = new List<IntPtr>();
         
+        private IntPtr _nativeAssemblyHandle = IntPtr.Zero;
+
         private void Awake()
         {
             string assemblyPath =  NativeConstants.GetAssemblyPath();
@@ -26,10 +32,27 @@ namespace UnityCpp.NativeBridge
 
         private void OnDestroy()
         {
+            Parallel.For(0, _allocatedNativePointers.Count, index =>
+            {
+                IntPtr nativePointer = _allocatedNativePointers[index];
+                NativeMethods.destroyNativeMonoBehaviour.Invoke(nativePointer);
+            });
+
             if (!NativeAssembly.Unload(_nativeAssemblyHandle))
             {
                 Debug.Log("Something went wrong unloading native code handle.");
             }
+        }
+
+        public static int AddNativePointer(IntPtr nativePointer)
+        {
+            _allocatedNativePointers.Add(nativePointer);
+            return _allocatedNativePointers.Count - 1;
+        }
+
+        public static void RemoveNativePointer(int index)
+        {
+            _allocatedNativePointers.RemoveAt(index);
         }
     }
 }

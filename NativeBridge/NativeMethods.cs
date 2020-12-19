@@ -16,6 +16,9 @@ namespace UnityCpp.NativeBridge
         public delegate IntPtr CreateNativeMonoBehaviourInstance([MarshalAs(UnmanagedType.LPStr)] string className, IntPtr managedInstance);
         public static CreateNativeMonoBehaviourInstance createNativeMonoBehaviour;
 
+        public delegate void DestroyNativeMonoBehaviourInstance(IntPtr managedInstance);
+        public static DestroyNativeMonoBehaviourInstance destroyNativeMonoBehaviour;
+
         public delegate void MonoBehaviourMethod(IntPtr instancePtr);
         public static MonoBehaviourMethod monoBehaviourAwake;
         public static MonoBehaviourMethod monoBehaviourOnDestroy;
@@ -103,6 +106,7 @@ namespace UnityCpp.NativeBridge
             _setUnitySendMessage.Invoke(UnitySendMessageMethod);
             
             createNativeMonoBehaviour = NativeAssembly.GetMethod<CreateNativeMonoBehaviourInstance>(assemblyHandle, "CreateNativeMonoBehaviourInstance");
+            destroyNativeMonoBehaviour = NativeAssembly.GetMethod<DestroyNativeMonoBehaviourInstance>(assemblyHandle, "DestroyNativeMonoBehaviourInstance");
             monoBehaviourAwake = NativeAssembly.GetMethod<MonoBehaviourMethod>(assemblyHandle, "CallMonoBehaviourAwake");
             monoBehaviourOnDestroy = NativeAssembly.GetMethod<MonoBehaviourMethod>(assemblyHandle, "CallMonoBehaviourOnDestroy");
             monoBehaviourStart = NativeAssembly.GetMethod<MonoBehaviourMethod>(assemblyHandle, "CallMonoBehaviourStart");

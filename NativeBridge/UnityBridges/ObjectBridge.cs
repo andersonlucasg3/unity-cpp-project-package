@@ -29,5 +29,14 @@ namespace UnityCpp.NativeBridge.UnityBridges
 
         [UsedImplicitly]
         public int GetInstanceID() => unityObject.GetInstanceID();
+
+        [UsedImplicitly]
+        public static void Destroy(ObjectBridge obj, float t) => Object.Destroy(obj.unityObject);
+
+        [UsedImplicitly]
+        public static void DestroyImmediate(ObjectBridge obj, bool allowDestroyingAssets) => Object.DestroyImmediate(obj.unityObject, allowDestroyingAssets);
+
+        [UsedImplicitly]
+        public static void DontDestroyOnLoad(ObjectBridge target) => Object.DontDestroyOnLoad(target.unityObject);
     }
 }
