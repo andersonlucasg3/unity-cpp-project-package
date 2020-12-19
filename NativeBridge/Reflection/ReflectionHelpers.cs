@@ -47,7 +47,7 @@ namespace UnityCpp.NativeBridge.Reflection
 
         public static void GetObjectAndInfo<TInfo>(IntPtr objectPtr, IntPtr infoPtr, out object objectInstance, out TInfo info)
         {
-            objectInstance = ConvertPtrTo<object>(objectPtr);
+            objectInstance = objectPtr != IntPtr.Zero ? ConvertPtrTo<object>(objectPtr) : null;
             info = ConvertPtrTo<TInfo>(infoPtr);
         }
         

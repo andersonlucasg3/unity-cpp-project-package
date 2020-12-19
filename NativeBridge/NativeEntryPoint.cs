@@ -32,11 +32,11 @@ namespace UnityCpp.NativeBridge
 
         private void OnDestroy()
         {
-            Parallel.For(0, _allocatedNativePointers.Count, index =>
+            for (int index = 0; index < _allocatedNativePointers.Count; index++)
             {
                 IntPtr nativePointer = _allocatedNativePointers[index];
                 NativeMethods.destroyNativeMonoBehaviour.Invoke(nativePointer);
-            });
+            }
 
             if (!NativeAssembly.Unload(_nativeAssemblyHandle))
             {
