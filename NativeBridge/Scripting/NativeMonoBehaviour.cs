@@ -39,7 +39,6 @@ namespace UnityCpp.NativeBridge.Scripting
         {
             NativeMethods.monoBehaviourOnDestroy.Invoke(_nativeInstance);
             NativeEnd.RemoveNativePointer(_nativeInstance);
-            ReflectionHelpers.DeallocPtr(_managedPointer);
         }
 
         private void Start()
