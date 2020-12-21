@@ -9,7 +9,7 @@ namespace UnityCpp.Editor
 {
     public static class NativeProjectBuild
     {
-        private const string _buildProjectMenuItem = "Assets/UnityCpp/Setup Project #B";
+        private const string _buildProjectMenuItem = "Assets/UnityCpp/Build C++ Project #B";
         private const string _cppProjectPath = "CppSource";
         private const string _progressBarTitle = "C++";
 
