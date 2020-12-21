@@ -23,9 +23,18 @@ namespace UnityCpp.Editor
             
             EditorUtility.DisplayProgressBar(_progressBarTitle, "Starting C++ project build", 0F);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo("cmake", $"--build {cppProjectPath} -- -j 4")
+            RunProcess(cppProjectPath);
+
+            EditorUtility.ClearProgressBar();
+
+            Debug.Log("---->>> Finished C++ project build");
+        }
+
+        private static void RunProcess(string projectPath)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo("cmake", $"--build {projectPath} -- -j 4")
             {
-                WorkingDirectory = cppProjectPath
+                WorkingDirectory = projectPath
             };
 
             Process buildProcess = new Process
@@ -37,8 +46,6 @@ namespace UnityCpp.Editor
 
             buildProcess.Start();
             buildProcess.WaitForExit();
-
-            Debug.Log("---->>> Finished C++ project build");
         }
 
         private static void BuildProcessOnOutputDataReceived(object sender, DataReceivedEventArgs e)
