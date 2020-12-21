@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
 using UnityEditor;
 using UnityEngine;
@@ -40,6 +39,8 @@ namespace UnityCpp.Editor
             Debug.Log("---->>> Finished project configuration.");
             
             NativeProjectComponents.GenerateNativeComponentsRegistration();
+            
+            NativeProjectBuild.BuildProject();
         }
 
         private static string DownloadRepository()
