@@ -1,15 +1,19 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityCpp.Loader;
+using UnityCpp.NativeBridge.Reflection;
 using UnityEditor;
 using UnityEngine;
 
 namespace UnityCpp.NativeBridge
 {
-    [DefaultExecutionOrder(100000)]
+    [DefaultExecutionOrder(int.MaxValue)]
     public class NativeEnd : MonoBehaviour
     {
         private static readonly List<IntPtr> _allocatedNativePointers = new List<IntPtr>();
+        private static readonly ConcurrentQueue<IntPtr> _destructionQueue = new ConcurrentQueue<IntPtr>();
+        
         private IntPtr _nativeAssemblyHandle = IntPtr.Zero;
 
 #if UNITY_EDITOR
@@ -24,6 +28,14 @@ namespace UnityCpp.NativeBridge
             };
         }
 #endif
+
+        private void Update()
+        {
+            while (_destructionQueue.TryDequeue(out IntPtr managedPointer))
+            {
+                ReflectionHelpers.DeallocPtr(managedPointer);
+            }
+        }
 
         private void OnDestroy()
         {
@@ -59,6 +71,11 @@ namespace UnityCpp.NativeBridge
         public static void RemoveNativePointer(IntPtr nativePointer)
         {
             _allocatedNativePointers.Remove(nativePointer);
+        }
+
+        public static void EnqueueDestruction(IntPtr managedPointer)
+        {
+            _destructionQueue.Enqueue(managedPointer);
         }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityCpp.NativeBridge
 {
-    [DefaultExecutionOrder(-100000)]
+    [DefaultExecutionOrder(int.MinValue)]
     public class NativeStart : MonoBehaviour
     {
         private void Awake()

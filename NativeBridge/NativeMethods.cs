@@ -230,7 +230,10 @@ namespace UnityCpp.NativeBridge
         }
 
         [MonoPInvokeCallback(typeof(UnityDestructorDelegate))]
-        private static void Destructor(IntPtr intPtr) => DeallocPtr(intPtr);
+        private static void Destructor(IntPtr intPtr)
+        {
+            NativeEnd.EnqueueDestruction(intPtr);
+        }
 
         #endregion
 
