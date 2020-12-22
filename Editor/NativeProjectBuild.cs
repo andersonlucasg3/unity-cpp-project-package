@@ -18,26 +18,30 @@ namespace UnityCpp.Editor
         private const string _cppProjectPath = "CppSource";
         private const string _cmakeCachesPath = "cmake-build-debug";
         private const string _progressBarTitle = "C++";
+        private const string _buildTypeParameter = "-DCMAKE_BUILD_TYPE=Debug";
 #if UNITY_EDITOR_OSX
         private const string _cmakePath = "/usr/local/bin/cmake";
+        private const string _cmakeGenerationString = "CodeBlocks - Unix Makefiles";
+        private const string _cmakeCompileParameter = " --target all -- -j 3";
 #else
-        private const string _cmakePath = "/c/Program Files/CMake/bin/cmake";
+        private const string _cmakePath = "C:\\Program Files\\CMake\\bin\\cmake.exe";
+        private const string _cmakeGenerationString = "Visual Studio 16 2019";
+        private const string _cmakeCompileParameter = "";
 #endif
 
         private static ConcurrentQueue<ProgressConfig> _configs;
         private static ConcurrentQueue<Action> _actions;
-        
-        [MenuItem(_buildProjectMenuItem)]
+         
+        [MenuItem(_buildProjectMenuItem), InitializeOnLoadMethod]
         public static void BuildProject()
         {
             ClearConsoleLogs();
+            
+            AssetDatabase.DisallowAutoRefresh();
 
             Debug.Log("---->>> Starting C++ project build");
             
-            _configs = new ConcurrentQueue<ProgressConfig>();
-            _actions = new ConcurrentQueue<Action>();
-            EditorApplication.update += EditorUpdate;
-
+            PrepareUpdates();
 
             string projectPath = Directory.GetParent(Application.dataPath).ToString();
             string cppProjectPath = Path.Combine(projectPath, _cppProjectPath);
@@ -46,18 +50,29 @@ namespace UnityCpp.Editor
             if (!Directory.Exists(cmakeCachesPath)) Directory.CreateDirectory(cmakeCachesPath);
             
             EditorUtility.DisplayProgressBar(_progressBarTitle, "Starting C++ project build", 0F);
-            
-            RunProcess(cppProjectPath, $"-DCMAKE_BUILD_TYPE=Debug -G \"CodeBlocks - Unix Makefiles\" {cppProjectPath} -B {cmakeCachesPath}",  (a, b) =>
-            {
-                RunProcess(cppProjectPath, $"--build {cmakeCachesPath} --target all -- -j 3", BuildProcessOnExited);                
-            });
-        }
 
-        private static void ClearConsoleLogs()
-        {
-            Type logEntries = Type.GetType("UnityEditor.LogEntries, UnityEditor.dll");
-            MethodInfo clearMethod = logEntries?.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
-            clearMethod?.Invoke(null,null);
+            string arguments = $"{_buildTypeParameter} " +
+                               $"-G \"{_cmakeGenerationString}\" " +
+                               $"\"{cppProjectPath}\" " +
+                               $"-B \"{cmakeCachesPath}\"";
+            RunProcess(cppProjectPath, arguments,  (a, b) =>
+            {
+                RunProcess(cppProjectPath, $"--build \"{cmakeCachesPath}\"{_cmakeCompileParameter}", (x, y) =>
+                {
+                    _actions.Enqueue(() =>
+                    {
+                        EditorUtility.ClearProgressBar();
+
+                        EndUpdates();
+                
+                        Debug.Log("---->>> Finished C++ project build");
+                
+                        AssetDatabase.AllowAutoRefresh();
+                        
+                        AssetDatabase.Refresh();
+                    });
+                });                
+            });
         }
 
         [MenuItem(_cleanProjectMenuItem)]
@@ -68,11 +83,38 @@ namespace UnityCpp.Editor
             string cmakeCachesPath = Path.Combine(cppProjectPath, _cmakeCachesPath);
             
             Debug.Log("Started cleaning C++ build caches");
-            if (Directory.Exists(cmakeCachesPath))
+            string arguments = $"--clean " +
+                               $"\"{cppProjectPath}\" " +
+                               $"-B \"{cmakeCachesPath}\"";
+            RunProcess(cppProjectPath, arguments, (a, b) =>
             {
-                Directory.Delete(cmakeCachesPath, true);
-            }
-            Debug.Log("Finished cleaning C++ build caches");
+                if (Directory.Exists(cmakeCachesPath))
+                {
+                    Directory.Delete(cmakeCachesPath, true);
+                }
+                Debug.Log("Finished cleaning C++ build caches");                
+            });
+        }
+        
+        private static void PrepareUpdates()
+        {
+            _configs = new ConcurrentQueue<ProgressConfig>();
+            _actions = new ConcurrentQueue<Action>();
+            EditorApplication.update += EditorUpdate;
+        }
+        
+        private static void EndUpdates()
+        {
+            EditorApplication.update -= EditorUpdate;
+            _configs = null;
+            _actions = null;
+        }
+
+        private static void ClearConsoleLogs()
+        {
+            Type logEntries = Type.GetType("UnityEditor.LogEntries, UnityEditor.dll");
+            MethodInfo clearMethod = logEntries?.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
+            clearMethod?.Invoke(null,null);
         }
 
         private static void EditorUpdate()
@@ -95,15 +137,18 @@ namespace UnityCpp.Editor
             ProcessStartInfo startInfo = new ProcessStartInfo(_cmakePath, arguments)
             {
                 WorkingDirectory = workingDirectory,
+                UseShellExecute = false,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
-                UseShellExecute = false,
+                CreateNoWindow = true,
+                LoadUserProfile = true
             };
 
             string logContents = $"Running command line: {startInfo.FileName} {startInfo.Arguments}\n" +
                                  $"Working directory: {workingDirectory}";
             Debug.Log(logContents);
 
+            
             Process buildProcess = new Process
             {
                 StartInfo = startInfo, 
@@ -125,18 +170,6 @@ namespace UnityCpp.Editor
             buildProcess.BeginErrorReadLine();
             
             new Thread(buildProcess.WaitForExit).Start();
-        }
-
-        private static void BuildProcessOnExited(object sender, EventArgs e)
-        {
-            _actions.Enqueue(() =>
-            {
-                EditorUtility.ClearProgressBar();
-
-                EditorApplication.update -= EditorUpdate;
-                
-                Debug.Log("---->>> Finished C++ project build");
-            });
         }
 
         private static void BuildProcessOnErrorDataReceived(object sender, DataReceivedEventArgs e)
