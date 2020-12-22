@@ -21,7 +21,7 @@ namespace UnityCpp.Editor
 #if UNITY_EDITOR_OSX
         private const string _cmakePath = "/usr/local/bin/cmake";
 #else
-        private const string _cmakePath = "/somewhere/in/program/files";
+        private const string _cmakePath = "/c/Program Files/CMake/bin/cmake";
 #endif
 
         private static ConcurrentQueue<ProgressConfig> _configs;
