@@ -39,7 +39,7 @@ namespace UnityCpp.Editor.Builds
                     return;
                 }
 
-                _configs.Enqueue(config);
+                configs.Enqueue(config);
             }
         }
     }
