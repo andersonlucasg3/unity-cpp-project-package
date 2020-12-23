@@ -29,12 +29,16 @@ namespace UnityCpp.Editor
         private const string _cmakeCompileParameter = "";
 #endif
 
+        private static bool _isAnythingRunning = false;
         private static ConcurrentQueue<ProgressConfig> _configs;
         private static ConcurrentQueue<Action> _actions;
          
-        [MenuItem(_buildProjectMenuItem), InitializeOnLoadMethod]
+        [MenuItem(_buildProjectMenuItem)]
         public static void BuildProject()
         {
+            if (_isAnythingRunning) return;
+            _isAnythingRunning = true;
+        
             ClearConsoleLogs();
             
             AssetDatabase.DisallowAutoRefresh();
@@ -57,19 +61,24 @@ namespace UnityCpp.Editor
                                $"-B \"{cmakeCachesPath}\"";
             RunProcess(cppProjectPath, arguments,  (a, b) =>
             {
-                RunProcess(cppProjectPath, $"--build \"{cmakeCachesPath}\"{_cmakeCompileParameter}", (x, y) =>
+                arguments = $"--build " +
+                            $"\"{cmakeCachesPath}" +
+                            $"\"{_cmakeCompileParameter}";
+                RunProcess(cppProjectPath, arguments, (x, y) =>
                 {
                     _actions.Enqueue(() =>
                     {
-                        EditorUtility.ClearProgressBar();
-
                         EndUpdates();
+                        
+                        EditorUtility.ClearProgressBar();
                 
                         Debug.Log("---->>> Finished C++ project build");
                 
                         AssetDatabase.AllowAutoRefresh();
                         
                         AssetDatabase.Refresh();
+
+                        _isAnythingRunning = false;
                     });
                 });                
             });
@@ -78,6 +87,9 @@ namespace UnityCpp.Editor
         [MenuItem(_cleanProjectMenuItem)]
         public static void CleanProject()
         {
+            if (_isAnythingRunning) return;
+            _isAnythingRunning = true;
+            
             string projectPath = Directory.GetParent(Application.dataPath).ToString();
             string cppProjectPath = Path.Combine(projectPath, _cppProjectPath);
             string cmakeCachesPath = Path.Combine(cppProjectPath, _cmakeCachesPath);
@@ -92,7 +104,9 @@ namespace UnityCpp.Editor
                 {
                     Directory.Delete(cmakeCachesPath, true);
                 }
-                Debug.Log("Finished cleaning C++ build caches");                
+                Debug.Log("Finished cleaning C++ build caches");
+
+                _isAnythingRunning = false;
             });
         }
         
