@@ -10,13 +10,13 @@ namespace UnityCpp.NativeBridge
     {
 #if UNITY_WINDOWS
 #if UNITY_EDITOR
-        private const string nativeCodeAssemblyPath = "/Plugins/NativeComponents/UnityCppLib.dll";
+        private const string nativeCodeAssemblyPath = "/Plugins/UnityCpp/UnityCppLib.dll";
 #else
         private const string nativeCodeAssemblyPath = "/Plugins/x86_64/UnityCppLib.dll";
 #endif
 #else
 #if UNITY_EDITOR
-        private const string nativeCodeAssemblyPath = "/Plugins/NativeComponents/libUnityCppLib.dylib";
+        private const string nativeCodeAssemblyPath = "/Plugins/UnityCpp/libUnityCppLib.dylib";
 #else
         private const string nativeCodeAssemblyPath = "/Plugins/libUnityCppLib.dylib";
 #endif
