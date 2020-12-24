@@ -11,12 +11,7 @@ namespace UnityCpp.Editor.Builds
 {
     internal class ProcessRunner
     {
-#if UNITY_EDITOR_OSX
         private readonly GccOutputParser _outputParser = new GccOutputParser();
-#else
-        private readonly VisualStudioOutputParser _outputParser = new VisualStudioOutputParser();
-#endif
-        
         private readonly ConcurrentQueue<Action> _actions = new ConcurrentQueue<Action>();
 
         public string applicationPath { get; set; }
@@ -48,14 +43,14 @@ namespace UnityCpp.Editor.Builds
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 CreateNoWindow = true,
-                LoadUserProfile = true
+                LoadUserProfile = true,
             };
+            SetupEnvironment(startInfo);
 
             string logContents = $"Running command line: {startInfo.FileName} {startInfo.Arguments}\n" +
                                  $"Working directory: {workingDirectory}";
             Debug.Log(logContents);
 
-            
             Process buildProcess = new Process
             {
                 StartInfo = startInfo, 
@@ -89,8 +84,57 @@ namespace UnityCpp.Editor.Builds
             buildProcess.BeginErrorReadLine();
             
             new Thread(buildProcess.WaitForExit).Start();
-        }        
-        
+        }
+
+        private static void SetupEnvironment(ProcessStartInfo startInfo)
+        {
+            const string visualStudioPath = "C:\\Program Files (x86)\\Microsoft Visual Studio";
+            const string windowsKitsPath = "C:\\Program Files (x86)\\Windows Kits";
+            
+            string[] compilersPaths = Directory.GetFiles(visualStudioPath, "cl.exe", SearchOption.AllDirectories);
+            string compilerPath = "";
+            foreach (string compiler in compilersPaths)
+            {
+                bool is64bitCompiler = Environment.Is64BitOperatingSystem && compiler.Contains("x64");
+                bool is32bitCompiler = !Environment.Is64BitOperatingSystem && compiler.Contains("x86");
+                if (!is64bitCompiler && !is32bitCompiler) continue;
+                compilerPath = Directory.GetParent(compiler).ToString();
+                break;
+            }
+
+            string[] visualStudioIncludes = Directory.GetDirectories(visualStudioPath, "include", SearchOption.AllDirectories);
+            // visualStudioIncludes = GetAllSubDirectories(visualStudioIncludes);
+            string[] visualStudioLibs = Directory.GetDirectories(visualStudioPath, "lib", SearchOption.AllDirectories);
+            // visualStudioLibs = GetAllSubDirectories(visualStudioLibs);
+            string[] windowsKitsIncludes = Directory.GetDirectories(windowsKitsPath, "Include", SearchOption.AllDirectories);
+            // windowsKitsIncludes = GetAllSubDirectories(windowsKitsIncludes);
+            string[] windowsKitsLibs = Directory.GetDirectories(windowsKitsPath, "Lib", SearchOption.AllDirectories);
+            // windowsKitsLibs = GetAllSubDirectories(windowsKitsLibs);
+            
+            string include = $"{string.Join(";", visualStudioIncludes)};{string.Join(";", windowsKitsIncludes)};";
+            string lib = $"{string.Join(";", visualStudioLibs)};{string.Join(";", windowsKitsLibs)};";
+            
+            string path = startInfo.Environment["Path"];
+            path += $"{path};{compilerPath};{include}{lib};C:\\MinGW\\bin;";
+            startInfo.Environment["Path"] = path;
+            
+            path = startInfo.EnvironmentVariables["Path"];
+            path += $"{path};{compilerPath};{include}{lib};C:\\MinGW\\bin";
+            startInfo.EnvironmentVariables["Path"] = path;
+        }
+
+        // private static string[] GetAllSubDirectories(string[] directories)
+        // {
+        //     List<string> allSubDirectories = new List<string>(directories);
+        //     foreach (string directory in directories)
+        //     {
+        //         string[] children = Directory.GetDirectories(directory);
+        //         allSubDirectories.AddRange(children);
+        //         allSubDirectories.AddRange(GetAllSubDirectories(children));
+        //     }
+        //     return allSubDirectories.ToArray();
+        // } 
+
         private static void BuildProcessOnErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (string.IsNullOrEmpty(e.Data)) return;

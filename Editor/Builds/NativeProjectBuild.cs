@@ -18,11 +18,11 @@ namespace UnityCpp.Editor.Builds
 #if UNITY_EDITOR_OSX
         private const string _cmakePath = "/usr/local/bin/cmake";
         private const string _cmakeGenerationString = "CodeBlocks - Unix Makefiles";
-        private const string _cmakeCompileParameter = " --target all -- -j 3";
+        private const string _cmakeCompileParameter = "--target all -- -j 3";
 #else
         private const string _cmakePath = "C:\\Program Files\\CMake\\bin\\cmake.exe";
-        private const string _cmakeGenerationString = "Visual Studio 16 2019";
-        private const string _cmakeCompileParameter = "";
+        private const string _cmakeGenerationString = "CodeBlocks - MinGW Makefiles";
+        private const string _cmakeCompileParameter = "--target all";
 #endif
 
         private static bool _isAnythingRunning;
@@ -49,7 +49,7 @@ namespace UnityCpp.Editor.Builds
                 _buildTypeParameter,
                 $"-G \"{_cmakeGenerationString}\"",
                 $"\"{runner.cppProjectPath}\"",
-                $"-B \"{runner.cmakeCachesPath}\""
+                $"-B \"{runner.cmakeCachesPath}\"",
             };
 
             runner.applicationPath = _cmakePath;
@@ -98,29 +98,9 @@ namespace UnityCpp.Editor.Builds
         {
             if (_isAnythingRunning) return;
             _isAnythingRunning = true;
-
-            ProcessRunner runner = new ProcessRunner(_cppProjectPath, _cmakeCachesPath);
-
+            
             Debug.Log("Started cleaning C++ build caches");
 
-            string[] arguments =
-            {
-                "--clean",
-                $"\"{runner.cppProjectPath}\"",
-                $"-B \"{runner.cmakeCachesPath}\""
-            };
-
-            runner.applicationPath = _cmakePath;
-            runner.arguments = arguments;
-            runner.workingDirectory = runner.cppProjectPath;
-            runner.progressUpdateEvent = UpdateProgressBar;
-            runner.exitEvent = DidFinishCleanProcess;
-
-            runner.RunProcess();
-        }
-
-        private static void DidFinishCleanProcess(object sender, EventArgs e)
-        {
             string projectPath = Directory.GetParent(Application.dataPath).ToString();
             string cppProjectPath = Path.Combine(projectPath, _cppProjectPath);
             string cmakeCachesPath = Path.Combine(cppProjectPath, _cmakeCachesPath);
@@ -129,9 +109,8 @@ namespace UnityCpp.Editor.Builds
             {
                 Directory.Delete(cmakeCachesPath, true);
             }
-            Debug.Log("Finished cleaning C++ build caches");
             
-            EditorUtility.ClearProgressBar();
+            Debug.Log("Finished cleaning C++ build caches");
 
             _isAnythingRunning = false;
         }

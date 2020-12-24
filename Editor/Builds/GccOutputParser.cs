@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR_OSX
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace UnityCpp.Editor.Builds
 {
@@ -39,9 +38,8 @@ namespace UnityCpp.Editor.Builds
                     return;
                 }
 
-                _configs.Enqueue(config);
+                configs.Enqueue(config);
             }
         }
     }
 }
-#endif
