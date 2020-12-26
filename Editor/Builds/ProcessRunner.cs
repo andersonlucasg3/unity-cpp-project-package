@@ -11,8 +11,8 @@ namespace UnityCpp.Editor.Builds
 {
     internal class ProcessRunner
     {
-        private readonly GccOutputParser _outputParser = new GccOutputParser();
         private readonly ConcurrentQueue<Action> _actions = new ConcurrentQueue<Action>();
+        private readonly BuildOutputParser _outputParser;
 
         public string applicationPath { get; set; }
         public string[] arguments { get; set; }
@@ -24,11 +24,12 @@ namespace UnityCpp.Editor.Builds
         public string cppProjectPath { get; }
         public string cmakeCachesPath { get; }
 
-        public ProcessRunner(string cppProjectPath, string cmakeCachesPath)
+        public ProcessRunner(string cppProjectPath, string cmakeCachesPath, BuildOutputParser outputParser)
         {
             projectPath = Directory.GetParent(Application.dataPath).ToString();
             this.cppProjectPath = Path.Combine(projectPath, cppProjectPath);
             this.cmakeCachesPath = Path.Combine(this.cppProjectPath, cmakeCachesPath);
+            _outputParser = outputParser;
         }
         
         public void RunProcess()
@@ -45,7 +46,6 @@ namespace UnityCpp.Editor.Builds
                 CreateNoWindow = true,
                 LoadUserProfile = true,
             };
-            SetupEnvironment(startInfo);
 
             string logContents = $"Running command line: {startInfo.FileName} {startInfo.Arguments}\n" +
                                  $"Working directory: {workingDirectory}";
@@ -85,55 +85,6 @@ namespace UnityCpp.Editor.Builds
             
             new Thread(buildProcess.WaitForExit).Start();
         }
-
-        private static void SetupEnvironment(ProcessStartInfo startInfo)
-        {
-            const string visualStudioPath = "C:\\Program Files (x86)\\Microsoft Visual Studio";
-            const string windowsKitsPath = "C:\\Program Files (x86)\\Windows Kits";
-            
-            string[] compilersPaths = Directory.GetFiles(visualStudioPath, "cl.exe", SearchOption.AllDirectories);
-            string compilerPath = "";
-            foreach (string compiler in compilersPaths)
-            {
-                bool is64bitCompiler = Environment.Is64BitOperatingSystem && compiler.Contains("x64");
-                bool is32bitCompiler = !Environment.Is64BitOperatingSystem && compiler.Contains("x86");
-                if (!is64bitCompiler && !is32bitCompiler) continue;
-                compilerPath = Directory.GetParent(compiler).ToString();
-                break;
-            }
-
-            string[] visualStudioIncludes = Directory.GetDirectories(visualStudioPath, "include", SearchOption.AllDirectories);
-            // visualStudioIncludes = GetAllSubDirectories(visualStudioIncludes);
-            string[] visualStudioLibs = Directory.GetDirectories(visualStudioPath, "lib", SearchOption.AllDirectories);
-            // visualStudioLibs = GetAllSubDirectories(visualStudioLibs);
-            string[] windowsKitsIncludes = Directory.GetDirectories(windowsKitsPath, "Include", SearchOption.AllDirectories);
-            // windowsKitsIncludes = GetAllSubDirectories(windowsKitsIncludes);
-            string[] windowsKitsLibs = Directory.GetDirectories(windowsKitsPath, "Lib", SearchOption.AllDirectories);
-            // windowsKitsLibs = GetAllSubDirectories(windowsKitsLibs);
-            
-            string include = $"{string.Join(";", visualStudioIncludes)};{string.Join(";", windowsKitsIncludes)};";
-            string lib = $"{string.Join(";", visualStudioLibs)};{string.Join(";", windowsKitsLibs)};";
-            
-            string path = startInfo.Environment["Path"];
-            path += $"{path};{compilerPath};{include}{lib};C:\\MinGW\\bin;";
-            startInfo.Environment["Path"] = path;
-            
-            path = startInfo.EnvironmentVariables["Path"];
-            path += $"{path};{compilerPath};{include}{lib};C:\\MinGW\\bin";
-            startInfo.EnvironmentVariables["Path"] = path;
-        }
-
-        // private static string[] GetAllSubDirectories(string[] directories)
-        // {
-        //     List<string> allSubDirectories = new List<string>(directories);
-        //     foreach (string directory in directories)
-        //     {
-        //         string[] children = Directory.GetDirectories(directory);
-        //         allSubDirectories.AddRange(children);
-        //         allSubDirectories.AddRange(GetAllSubDirectories(children));
-        //     }
-        //     return allSubDirectories.ToArray();
-        // } 
 
         private static void BuildProcessOnErrorDataReceived(object sender, DataReceivedEventArgs e)
         {

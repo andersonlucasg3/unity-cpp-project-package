@@ -4,5 +4,7 @@
     {
         public string info;
         public float progress;
+
+        public bool printLog;
     }
 }

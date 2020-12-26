@@ -21,8 +21,8 @@ namespace UnityCpp.Editor.Builds
         private const string _cmakeCompileParameter = "--target all -- -j 3";
 #else
         private const string _cmakePath = "C:\\Program Files\\CMake\\bin\\cmake.exe";
-        private const string _cmakeGenerationString = "CodeBlocks - MinGW Makefiles";
-        private const string _cmakeCompileParameter = "--target all";
+        private const string _cmakeGenerationString = "Visual Studio 16 2019";
+        private const string _cmakeCompileParameter = "";
 #endif
 
         private static bool _isAnythingRunning;
@@ -39,7 +39,12 @@ namespace UnityCpp.Editor.Builds
 
             Debug.Log("---->>> Starting C++ project build");
 
-            ProcessRunner runner = new ProcessRunner(_cppProjectPath, _cmakeCachesPath);
+#if UNITY_EDITOR_OSX
+            BuildOutputParser parser = new BuildOutputParser();
+#else
+            BuildOutputParser parser = new WindowsBuildOutputParser(0F);
+#endif
+            ProcessRunner runner = new ProcessRunner(_cppProjectPath, _cmakeCachesPath, parser);
 
             if (!Directory.Exists(runner.cmakeCachesPath)) Directory.CreateDirectory(runner.cmakeCachesPath);
             
@@ -63,7 +68,15 @@ namespace UnityCpp.Editor.Builds
 
         private static void DidFinishGeneratingCppProject(object sender, EventArgs e)
         {
-            ProcessRunner runner = new ProcessRunner(_cppProjectPath, _cmakeCachesPath);
+            EditorUtility.DisplayProgressBar(_progressBarTitle, "Building C++ project", .5F);
+            
+#if UNITY_EDITOR_OSX
+            BuildOutputParser parser = new BuildOutputParser();
+#else
+            BuildOutputParser parser = new WindowsBuildOutputParser(.5F);
+#endif
+            
+            ProcessRunner runner = new ProcessRunner(_cppProjectPath, _cmakeCachesPath, parser);
             
             string[] arguments = {
                 "--build",
@@ -85,9 +98,7 @@ namespace UnityCpp.Editor.Builds
             Debug.Log("---->>> Finished C++ project build");
             
             EditorUtility.ClearProgressBar();
-                
             AssetDatabase.AllowAutoRefresh();
-                        
             AssetDatabase.Refresh();
 
             _isAnythingRunning = false;
@@ -124,7 +135,11 @@ namespace UnityCpp.Editor.Builds
 
         private static void UpdateProgressBar(object sender, UpdateEventArgs args)
         {
-            Debug.Log($"[{(int) (100 * args.config.progress)}%] {args.config.info}");
+            if (args.config.printLog)
+            {
+                Debug.Log($"[{(int) (100 * args.config.progress)}%] {args.config.info}");
+            }
+
             EditorUtility.DisplayProgressBar(_progressBarTitle, args.config.info, args.config.progress);
         }
     }
