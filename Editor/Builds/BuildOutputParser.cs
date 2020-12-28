@@ -14,7 +14,7 @@ namespace UnityCpp.Editor.Builds
             configs = new ConcurrentQueue<ProgressConfig>();
         }
 
-        public virtual void BuildProcessOnOutputDataReceived(object sender, DataReceivedEventArgs e)
+        public void BuildProcessOnOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             lock (sender)
             {
@@ -29,9 +29,9 @@ namespace UnityCpp.Editor.Builds
                     config.progress = float.Parse(progress) * .01F;
                     if (config.progress < 1F)
                     {
-                        return MatchRegex(line, "/(\\w+\\.cpp)\\.o", fileName =>
+                        return MatchRegex(line, "/(\\w+)\\.cpp", fileName =>
                         {
-                            config.info = $"Compiled {fileName}";
+                            config.info = $"Compiled {fileName}.cpp";
                             return true;
                         });
                     }
@@ -40,7 +40,7 @@ namespace UnityCpp.Editor.Builds
                 if (!fileRegexResult && !MatchRegex(line, ".+Built\\s\\w+\\s(\\w+)", buildModule =>
                 {
                     config.progress = 1F;
-                    config.info = $"Built module {buildModule}";
+                    config.info = $"Linked {buildModule}";
                     return true;
                 }))
                 {
@@ -50,7 +50,7 @@ namespace UnityCpp.Editor.Builds
             }
         }
 
-        protected static bool MatchRegex(string contents, string regex, Func<string, bool> matchAction)
+        private static bool MatchRegex(string contents, string regex, Func<string, bool> matchAction)
         {
             Match match = Regex.Match(contents, regex);
             if (!match.Success) return false;

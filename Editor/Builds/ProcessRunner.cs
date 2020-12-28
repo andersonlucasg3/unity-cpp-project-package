@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -35,7 +36,7 @@ namespace UnityCpp.Editor.Builds
         public void RunProcess()
         {
             EditorApplication.update += EditorUpdate;
-            
+
             string argumentsString = string.Join(" ", arguments);
             ProcessStartInfo startInfo = new ProcessStartInfo(applicationPath, argumentsString)
             {
@@ -46,6 +47,8 @@ namespace UnityCpp.Editor.Builds
                 CreateNoWindow = true,
                 LoadUserProfile = true,
             };
+            
+            EnvironmentProcessor.ProcessEnvironment(startInfo.Environment);
 
             string logContents = $"Running command line: {startInfo.FileName} {startInfo.Arguments}\n" +
                                  $"Working directory: {workingDirectory}";
