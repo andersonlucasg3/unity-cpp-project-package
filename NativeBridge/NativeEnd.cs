@@ -13,19 +13,6 @@ namespace UnityCpp.NativeBridge
     {
         private IntPtr _nativeAssemblyHandle = IntPtr.Zero;
 
-#if UNITY_EDITOR
-        private void Awake()
-        {
-            EditorApplication.playModeStateChanged += change =>
-            {
-                if (change == PlayModeStateChange.ExitingPlayMode)
-                {
-                    Destroy(gameObject);
-                }
-            };
-        }
-#endif
-
         private void OnDestroy()
         {
             NativeMethods.DeInitialize(_nativeAssemblyHandle);
