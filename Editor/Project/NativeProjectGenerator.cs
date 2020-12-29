@@ -123,11 +123,11 @@ namespace UnityCpp.Editor.Project
             string parentPath = Directory.GetParent(filePath).ToString();
 
             includePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(relativeToPath, "");
-            if (includePath.StartsWith(Path.DirectorySeparatorChar.ToString())) includePath = includePath.Replace(Path.DirectorySeparatorChar.ToString(), "");
+            if (includePath.StartsWith(Path.DirectorySeparatorChar.ToString())) includePath = includePath.Substring(1);
             includePath = includePath.Replace(Path.DirectorySeparatorChar.ToString(), "/");
 
             cmakeListsIncludePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(Directory.GetParent(relativeToPath).ToString(), "");
-            if (cmakeListsIncludePath.StartsWith(Path.DirectorySeparatorChar.ToString())) cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.DirectorySeparatorChar.ToString(), "");
+            if (cmakeListsIncludePath.StartsWith(Path.DirectorySeparatorChar.ToString())) cmakeListsIncludePath = cmakeListsIncludePath.Substring(1);
             cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.DirectorySeparatorChar.ToString(), "/").Replace(".h", "");
 
             string fileName = Path.GetFileName(filePath);
