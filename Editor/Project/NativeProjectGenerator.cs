@@ -123,12 +123,12 @@ namespace UnityCpp.Editor.Project
             string parentPath = Directory.GetParent(filePath).ToString();
 
             includePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(relativeToPath, "");
-            if (includePath.StartsWith(Path.PathSeparator.ToString())) includePath = includePath.Replace(Path.PathSeparator.ToString(), "");
-            includePath = includePath.Replace(Path.PathSeparator.ToString(), "/");
+            if (includePath.StartsWith(Path.DirectorySeparatorChar.ToString())) includePath = includePath.Replace(Path.DirectorySeparatorChar.ToString(), "");
+            includePath = includePath.Replace(Path.DirectorySeparatorChar.ToString(), "/");
 
             cmakeListsIncludePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(Directory.GetParent(relativeToPath).ToString(), "");
-            if (cmakeListsIncludePath.StartsWith(Path.PathSeparator.ToString())) cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.PathSeparator.ToString(), "");
-            cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.PathSeparator.ToString(), "/").Replace(".h", "");
+            if (cmakeListsIncludePath.StartsWith(Path.DirectorySeparatorChar.ToString())) cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.DirectorySeparatorChar.ToString(), "");
+            cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.DirectorySeparatorChar.ToString(), "/").Replace(".h", "");
 
             string fileName = Path.GetFileName(filePath);
             _fileNameWithoutExtension = fileName.Replace(".h", "");
