@@ -96,10 +96,11 @@ namespace UnityCpp.Editor.Project
             
             string classesPath = _gameSourcesPath.Replace($"{_cppProjectPath}/", "");
             
-            for (int index = 0, indexNames = 0; index < classesNames.Count; indexNames++)
+            for (int index = 0; index < classesNames.Count; index++)
             {
-                string headerFile = $"{classesPath}/{classesNames[indexNames]}.h";
-                string sourceFile = $"{classesPath}/{classesNames[indexNames]}.cpp";
+                string className = classesNames[index];
+                string headerFile = $"{classesPath}/{className}.h";
+                string sourceFile = $"{classesPath}/{className}.cpp";
                 if (!cmakeListsContents.Contains(headerFile)) outputNames.Add($"\t\t{headerFile}");
                 if (!cmakeListsContents.Contains(sourceFile)) outputNames.Add($"\t\t{sourceFile}");
             }
