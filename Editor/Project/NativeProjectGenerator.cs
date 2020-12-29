@@ -13,9 +13,10 @@ namespace UnityCpp.Editor.Project
         private const string _generateRegisterComponentsMenuItem = "Assets/UnityCpp/Project/Re-generate";
         private const string _cppProjectPath = "CppSource";
         private const string _componentsFileName = "ComponentsEntryPoint";
-        private static readonly string _gameSourcesPath = $"{_cppProjectPath}/UnityCppLib/Game"; 
-        private static readonly string _componentsSourcePath = $"{_gameSourcesPath}/{_componentsFileName}.cpp";
-        private static readonly string _cmakeListsFilePath = $"{_cppProjectPath}/CMakeLists.txt";
+        private static readonly string _unityCppLibPath = Path.Combine(_cppProjectPath, "UnityCppLib");
+        private static readonly string _gameSourcesPath = Path.Combine(_unityCppLibPath, "Game"); 
+        private static readonly string _componentsSourcePath = Path.Combine(_gameSourcesPath, $"{_componentsFileName}.cpp");
+        private static readonly string _cmakeListsFilePath = Path.Combine(_cppProjectPath, "CMakeLists.txt");
 
         [UsedImplicitly]
         [MenuItem(_generateRegisterComponentsMenuItem)]
@@ -52,7 +53,8 @@ namespace UnityCpp.Editor.Project
             {
                 File.Delete(_componentsSourcePath);
             }
-            
+
+            string unityCppLibPath = Path.Combine(projectPath, _unityCppLibPath);
             string gameSourcesPath = Path.Combine(projectPath, _gameSourcesPath);
 
             TextWriter writer = File.CreateText(_componentsSourcePath);
@@ -60,7 +62,7 @@ namespace UnityCpp.Editor.Project
             
             string[] files = Directory.GetFiles(gameSourcesPath, "*.h", SearchOption.AllDirectories);
             string[] filteredFiles = Array.FindAll(files, input => !input.Contains(_componentsFileName));
-            headersInfos = Array.ConvertAll(filteredFiles, input => new HeaderFileInfo(input));
+            headersInfos = Array.ConvertAll(filteredFiles, input => new HeaderFileInfo(input, unityCppLibPath));
 
             writer.WriteLine();
             
