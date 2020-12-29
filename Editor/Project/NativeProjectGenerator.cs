@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using static UnityCpp.Editor.Utils.RegexUtils;
 
 namespace UnityCpp.Editor.Project
 {
@@ -24,27 +25,27 @@ namespace UnityCpp.Editor.Project
             
             Debug.Log("---->>> Beginning generation of components registration");
             
-            WriteRegistrationSourceFile(projectPath, out string[] classesNames);
+            WriteRegistrationSourceFile(projectPath, out HeaderFileInfo[] headersInfos);
 
             Debug.Log("---->>> Finished generating components registration");
 
             Debug.Log("---->>> Beginning to update CMakeLists.txt project");
 
-            UpdateCMakeListsProject(projectPath, classesNames);
+            UpdateCMakeListsProject(projectPath, headersInfos);
             
             Debug.Log("---->>> Finished updating CMakeLists.txt project");
         }
 
-        private static void WriteRegistrationSourceFile(string projectPath, out string[] classesNames)
+        private static void WriteRegistrationSourceFile(string projectPath, out HeaderFileInfo[] headersInfos)
         {
             void AddInclude(string headerName, TextWriter w)
             {
                 w.WriteLine($"#include \"{headerName}.h\"");
             }
             
-            void AddRegisterCall(string className, TextWriter w)
+            void AddRegisterCall(HeaderFileInfo headerFileInfo, TextWriter w)
             {
-                w.WriteLine($"\t{className}::Register();");
+                w.WriteLine($"\t{headerFileInfo.fullQualifiedClassName}::Register();");
             }
             
             if (File.Exists(_componentsSourcePath))
@@ -57,36 +58,32 @@ namespace UnityCpp.Editor.Project
             TextWriter writer = File.CreateText(_componentsSourcePath);
             AddInclude(_componentsFileName, writer);
             
-            string[] files = Directory.GetFiles(gameSourcesPath, "*.h");
-            IEnumerable<string> names = from file in files 
-                select Path.GetFileName(file) 
-                into name where !name.Contains(_componentsFileName) 
-                select name.Replace(".h", "");
-            classesNames = names.ToArray();
-
+            string[] files = Directory.GetFiles(gameSourcesPath, "*.h", SearchOption.AllDirectories);
+            headersInfos = Array.ConvertAll(files, input => new HeaderFileInfo(input));
+            
             writer.WriteLine();
             
-            foreach (string className in classesNames)
+            foreach (HeaderFileInfo headerFileInfo in headersInfos)
             {
-                AddInclude(className, writer);
+                AddInclude(headerFileInfo.relativeFullPath, writer);
             }
             
             writer.WriteLine();
-            
+
             writer.WriteLine("void RegisterComponents() {");
             
-            foreach (string className in classesNames)
+            foreach (HeaderFileInfo headerFileInfo in headersInfos)
             {
-                AddRegisterCall(className, writer);
+                AddRegisterCall(headerFileInfo, writer);
                 
-                Debug.Log($"Registered class: {className}");
+                Debug.Log($"Registered class: {headerFileInfo.fullQualifiedClassName}");
             }
             writer.WriteLine("}");
             
             writer.Close();
         }
 
-        private static void UpdateCMakeListsProject(string projectPath, IReadOnlyList<string> classesNames)
+        private static void UpdateCMakeListsProject(string projectPath, IReadOnlyList<HeaderFileInfo> headersInfos)
         {
             const string componentsGoHereString = "#COMPONENTS_GO_HERE";
             string cmakeListsPath = Path.Combine(projectPath, _cmakeListsFilePath);
@@ -96,9 +93,9 @@ namespace UnityCpp.Editor.Project
             
             string classesPath = _gameSourcesPath.Replace($"{_cppProjectPath}/", "");
             
-            for (int index = 0; index < classesNames.Count; index++)
+            for (int index = 0; index < headersInfos.Count; index++)
             {
-                string className = classesNames[index];
+                string className = headersInfos[index].fileNameWithoutExtension;
                 string headerFile = $"{classesPath}/{className}.h";
                 string sourceFile = $"{classesPath}/{className}.cpp";
                 if (!cmakeListsContents.Contains(headerFile)) outputNames.Add($"\t\t{headerFile}");
@@ -108,6 +105,43 @@ namespace UnityCpp.Editor.Project
 
             string outputCmakeLists = cmakeListsContents.Replace(componentsGoHereString, string.Join("\n", outputNames));
             File.WriteAllText(cmakeListsPath, outputCmakeLists);
+        }
+    }
+
+    internal readonly struct HeaderFileInfo
+    {
+        internal string parentPath { get; }
+        internal string relativeParentPath { get; }
+        internal string fileName { get; }
+        internal string fileNameWithoutExtension { get; }
+        internal string namespaceName { get; }
+
+        internal string fullPath => Path.Combine(parentPath, fileName);
+        internal string relativeFullPath => Path.Combine(relativeParentPath, fileName);
+
+        internal string fullQualifiedClassName => string.IsNullOrEmpty(namespaceName) ? fileNameWithoutExtension : $"{namespaceName}::{fileNameWithoutExtension}";
+
+        public HeaderFileInfo(string filePath, string relativePath = "") : this()
+        {
+            parentPath = Directory.GetParent(filePath).ToString();
+            relativeParentPath = parentPath.Replace(relativePath, "");
+            fileName = Path.GetFileName(filePath);
+            fileNameWithoutExtension = fileName.Replace(".h", "");
+            
+            string headerFileContents = File.ReadAllText(fullPath);
+
+            namespaceName = SetupNamespaceName(headerFileContents);
+        }
+
+        private static string SetupNamespaceName(string headerFileContents)
+        {
+            string namespaceValue = "";
+            _ = MatchRegex(headerFileContents, "namespace\\s(\\w+).+", match =>
+            {
+                namespaceValue = match;
+                return true;
+            });
+            return namespaceValue;
         }
     }
 }
