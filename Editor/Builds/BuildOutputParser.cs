@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
+using static UnityCpp.Editor.Utils.RegexUtils;
 
 namespace UnityCpp.Editor.Builds
 {
@@ -50,17 +49,6 @@ namespace UnityCpp.Editor.Builds
             }
         }
 
-        private static bool MatchRegex(string contents, string regex, Func<string, bool> matchAction)
-        {
-            Match match = Regex.Match(contents, regex);
-            if (!match.Success) return false;
-
-            Group group = match.Groups[1];
-            if (!group.Success) return false;
-
-            Capture capture = @group.Captures[0];
-
-            return matchAction.Invoke(capture.Value);
-        }
+        
     }
 }
