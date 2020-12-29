@@ -59,8 +59,9 @@ namespace UnityCpp.Editor.Project
             AddInclude(_componentsFileName, writer);
             
             string[] files = Directory.GetFiles(gameSourcesPath, "*.h", SearchOption.AllDirectories);
-            headersInfos = Array.ConvertAll(files, input => new HeaderFileInfo(input));
-            
+            string[] filteredFiles = Array.FindAll(files, input => !input.Contains(_componentsFileName));
+            headersInfos = Array.ConvertAll(filteredFiles, input => new HeaderFileInfo(input));
+
             writer.WriteLine();
             
             foreach (HeaderFileInfo headerFileInfo in headersInfos)
@@ -138,7 +139,7 @@ namespace UnityCpp.Editor.Project
         private static string SetupNamespaceName(string headerFileContents)
         {
             string namespaceValue = "";
-            _ = MatchRegex(headerFileContents, "namespace\\s(\\w+).+", match =>
+            _ = MatchRegex(headerFileContents, "namespace\\s+(\\w+)\\s*\\{", match =>
             {
                 namespaceValue = match;
                 return true;
