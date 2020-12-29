@@ -23,11 +23,6 @@ namespace UnityCpp.NativeBridge
             }
         }
 
-        private void OnApplicationQuit()
-        {
-            Destroy(gameObject);
-        }
-
         public void SetNativeHandle(IntPtr handle)
         {
             _nativeAssemblyHandle = handle;
