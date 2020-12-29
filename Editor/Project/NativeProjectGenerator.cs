@@ -110,19 +110,17 @@ namespace UnityCpp.Editor.Project
 
     internal readonly struct HeaderFileInfo
     {
-        private string parentPath { get; }
-        private string fileName { get; }
-        private string namespaceName { get; }
-        internal string fileNameWithoutExtension { get; }
+        private readonly string _namespaceName;
+        private readonly string _fileNameWithoutExtension;
         
         internal string includePath { get; }
         internal string cmakeListsIncludePath { get; }
 
-        internal string fullQualifiedClassName => string.IsNullOrEmpty(namespaceName) ? fileNameWithoutExtension : $"{namespaceName}::{fileNameWithoutExtension}";
+        internal string fullQualifiedClassName => string.IsNullOrEmpty(_namespaceName) ? _fileNameWithoutExtension : $"{_namespaceName}::{_fileNameWithoutExtension}";
 
         public HeaderFileInfo(string filePath, string relativeToPath = "") : this()
         {
-            parentPath = Directory.GetParent(filePath).ToString();
+            string parentPath = Directory.GetParent(filePath).ToString();
 
             includePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(relativeToPath, "");
             if (includePath.StartsWith(Path.PathSeparator.ToString())) includePath = includePath.Replace(Path.PathSeparator.ToString(), "");
@@ -132,12 +130,12 @@ namespace UnityCpp.Editor.Project
             if (cmakeListsIncludePath.StartsWith(Path.PathSeparator.ToString())) cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.PathSeparator.ToString(), "");
             cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.PathSeparator.ToString(), "/").Replace(".h", "");
 
-            fileName = Path.GetFileName(filePath);
-            fileNameWithoutExtension = fileName.Replace(".h", "");
+            string fileName = Path.GetFileName(filePath);
+            _fileNameWithoutExtension = fileName.Replace(".h", "");
             
             string headerFileContents = File.ReadAllText(filePath);
 
-            namespaceName = SetupNamespaceName(headerFileContents);
+            _namespaceName = SetupNamespaceName(headerFileContents);
         }
 
         private static string SetupNamespaceName(string headerFileContents)
