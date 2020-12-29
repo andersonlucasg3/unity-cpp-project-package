@@ -24,8 +24,6 @@ namespace UnityCpp.NativeBridge.Scripting
             _managedPointer = ReflectionHelpers.AllocObjectPtr(bridge);
             
             _nativeInstance = NativeMethods.createNativeMonoBehaviour.Invoke(_nativeClassName, _managedPointer);
-            NativeEnd.AddNativePointer(_nativeInstance);
-            
             if (_nativeInstance == IntPtr.Zero)
             {
                 Destroy(this);
@@ -38,7 +36,6 @@ namespace UnityCpp.NativeBridge.Scripting
         private void OnDestroy()
         {
             NativeMethods.monoBehaviourOnDestroy.Invoke(_nativeInstance);
-            NativeEnd.RemoveNativePointer(_nativeInstance);
         }
 
         private void Start()

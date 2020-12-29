@@ -132,9 +132,6 @@ namespace UnityCpp.NativeBridge
 
             _setManagedConstructor = NativeAssembly.GetMethod<SetManagedConstructorDelegate>(assemblyHandle, "SetManagedConstructorMethod");
             _setManagedConstructor.Invoke(Constructor);
-            
-            _setManagedDestructor = NativeAssembly.GetMethod<SetDestructorDelegate>(assemblyHandle, "SetManagedDestructorMethod");
-            _setManagedDestructor.Invoke(Destructor);
         }
 
         private static void SetGetSetMethods(IntPtr assemblyHandle)
@@ -227,12 +224,6 @@ namespace UnityCpp.NativeBridge
 
             object instance = info.Invoke(objects);
             return AllocObjectPtr(instance);
-        }
-
-        [MonoPInvokeCallback(typeof(UnityDestructorDelegate))]
-        private static void Destructor(IntPtr intPtr)
-        {
-            NativeEnd.EnqueueDestruction(intPtr);
         }
 
         #endregion
