@@ -5,11 +5,11 @@ using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-namespace UnityCpp.Editor
+namespace UnityCpp.Editor.Project
 {
     public static class NativeProjectUpdate
     {
-        private const string _updatePackageMenuItem = "Assets/UnityCpp/Update Package";
+        private const string _updatePackageMenuItem = "Assets/UnityCpp/Project/Update Package";
         private const string _titleLabel = "Updating package";
         private const string _infoLabel = "Unity Cpp Project";
 

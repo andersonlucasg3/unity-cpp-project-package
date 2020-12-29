@@ -5,11 +5,11 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 
-namespace UnityCpp.Editor
+namespace UnityCpp.Editor.Project
 {
-    public static class NativeProjectComponents
+    public static class NativeProjectGenerator
     {
-        private const string _generateRegisterComponentsMenuItem = "Assets/UnityCpp/Re-generate native components";
+        private const string _generateRegisterComponentsMenuItem = "Assets/UnityCpp/Project/Re-generate";
         private const string _cppProjectPath = "CppSource";
         private const string _componentsFileName = "ComponentsEntryPoint";
         private static readonly string _gameSourcesPath = $"{_cppProjectPath}/UnityCppLib/Game"; 
@@ -18,7 +18,7 @@ namespace UnityCpp.Editor
 
         [UsedImplicitly]
         [MenuItem(_generateRegisterComponentsMenuItem)]
-        public static void GenerateNativeComponentsRegistration()
+        public static void GenerateNativeRegistration()
         {
             string projectPath = Directory.GetParent(Application.dataPath).ToString();
             
@@ -88,22 +88,24 @@ namespace UnityCpp.Editor
 
         private static void UpdateCMakeListsProject(string projectPath, IReadOnlyList<string> classesNames)
         {
+            const string componentsGoHereString = "#COMPONENTS_GO_HERE";
             string cmakeListsPath = Path.Combine(projectPath, _cmakeListsFilePath);
             string cmakeListsContents = File.ReadAllText(cmakeListsPath);
-            
-            string[] outputNames = new string[classesNames.Count * 2];
+
+            List<string> outputNames = new List<string>();
             
             string classesPath = _gameSourcesPath.Replace($"{_cppProjectPath}/", "");
             
-            for (int index = 0, indexNames = 0; index < outputNames.Length; indexNames++)
+            for (int index = 0, indexNames = 0; index < classesNames.Count; indexNames++)
             {
-                outputNames[index] = $"\t\t{classesPath}/{classesNames[indexNames]}.h";
-                index++;
-                outputNames[index] = $"\t\t{classesPath}/{classesNames[indexNames]}.cpp";
-                index++;
+                string headerFile = $"{classesPath}/{classesNames[indexNames]}.h";
+                string sourceFile = $"{classesPath}/{classesNames[indexNames]}.cpp";
+                if (!cmakeListsContents.Contains(headerFile)) outputNames.Add($"\t\t{headerFile}");
+                if (!cmakeListsContents.Contains(sourceFile)) outputNames.Add($"\t\t{sourceFile}");
             }
+            outputNames.Add(componentsGoHereString);
 
-            string outputCmakeLists = cmakeListsContents.Replace("#COMPONENTS_GO_HERE", string.Join("\n", outputNames));
+            string outputCmakeLists = cmakeListsContents.Replace(componentsGoHereString, string.Join("\n", outputNames));
             File.WriteAllText(cmakeListsPath, outputCmakeLists);
         }
     }

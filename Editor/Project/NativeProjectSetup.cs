@@ -5,11 +5,11 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace UnityCpp.Editor
+namespace UnityCpp.Editor.Project
 {
     public static class NativeProjectSetup
     {
-        private const string _setupProjectMenuItem = "Assets/UnityCpp/Setup Project";
+        private const string _setupProjectMenuItem = "Assets/UnityCpp/Project/Setup";
         private const string _githubRepoUri = "https://github.com/andersonlucasg3/unity-cpp-project/archive/main.zip";
         private const string _temporaryFolderName = "CppProject";
         private const string _zipFileName = "github.zip";
@@ -39,7 +39,7 @@ namespace UnityCpp.Editor
             
             Debug.Log("---->>> Finished project configuration.");
             
-            NativeProjectComponents.GenerateNativeComponentsRegistration();
+            NativeProjectGenerator.GenerateNativeRegistration();
             
             NativeProjectBuild.BuildProject();
         }
