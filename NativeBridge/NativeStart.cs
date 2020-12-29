@@ -9,8 +9,6 @@ namespace UnityCpp.NativeBridge
     {
         private void Awake()
         {
-            DontDestroyOnLoad(gameObject);
-            
             string assemblyPath =  NativeConstants.GetAssemblyPath();
             Debug.Log($"Searching for native library in {assemblyPath}");
 
@@ -21,9 +19,9 @@ namespace UnityCpp.NativeBridge
                 return;
             }
             
-            gameObject.AddComponent<NativeEnd>().SetNativeHandle(nativeAssemblyHandle);
             NativeMethods.Initialize(nativeAssemblyHandle);
-            Destroy(this);
+            NativeEnd.SetNativeHandle(nativeAssemblyHandle);
+            Destroy(gameObject);
         }
     }
 }

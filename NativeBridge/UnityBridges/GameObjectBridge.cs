@@ -31,10 +31,29 @@ namespace UnityCpp.NativeBridge.UnityBridges
             set => unityGameObject.tag = value;
         }
 
-        public GameObjectBridge() : base(new GameObject()) => unityGameObject = (GameObject) unityObject;
-        public GameObjectBridge(string name) : base(new GameObject(name)) => unityGameObject = (GameObject) unityObject;
-        public GameObjectBridge(string name, Type[] components) : base(new GameObject(name, components)) => unityGameObject = (GameObject) unityObject;
-        private GameObjectBridge(GameObject gameObject) : base(gameObject) => unityGameObject = gameObject;
+        public GameObjectBridge() : base(new GameObject())
+        {
+            unityGameObject = (GameObject) unityObject;
+            unityGameObject.AddComponent<NativeEnd>();
+        }
+
+        public GameObjectBridge(string name) : base(new GameObject(name))
+        {
+            unityGameObject = (GameObject) unityObject;
+            unityGameObject.AddComponent<NativeEnd>();
+        }
+
+        public GameObjectBridge(string name, Type[] components) : base(new GameObject(name, components))
+        {
+            unityGameObject = (GameObject) unityObject;
+            unityGameObject.AddComponent<NativeEnd>();
+        }
+
+        private GameObjectBridge(GameObject gameObject) : base(gameObject)
+        {
+            unityGameObject = gameObject;
+            unityGameObject.AddComponent<NativeEnd>();
+        }
 
         public static implicit operator GameObjectBridge(GameObject gameObject) => new GameObjectBridge(gameObject);
 

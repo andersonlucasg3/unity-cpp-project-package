@@ -1,3 +1,4 @@
+using System;
 using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -6,6 +7,8 @@ namespace UnityCpp.NativeBridge.UnityBridges
 {
     public class ObjectBridge
     {
+        protected IntPtr _nativeInstance = IntPtr.Zero;
+        
         [UsedImplicitly] public readonly Object unityObject;
 
         [UsedImplicitly]
@@ -25,6 +28,11 @@ namespace UnityCpp.NativeBridge.UnityBridges
         protected ObjectBridge(Object obj) => unityObject = obj;
 
         public static implicit operator ObjectBridge(Object obj) => new ObjectBridge(obj);
+
+        public void SetNativeInstance(IntPtr nativeInstance)
+        {
+            _nativeInstance = nativeInstance;
+        }
 
         [UsedImplicitly]
         public int GetInstanceID() => unityObject.GetInstanceID();
