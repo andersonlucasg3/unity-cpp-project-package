@@ -5,11 +5,11 @@ using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-namespace UnityCpp.Editor.Project
+namespace UnityCpp.Editor.Package
 {
-    public static class NativeProjectUpdate
+    public static class NativePackageUpdate
     {
-        private const string _updatePackageMenuItem = "Assets/UnityCpp/Project/Update Package";
+        private const string _updatePackageMenuItem = "Assets/UnityCpp/Package/Update";
         private const string _titleLabel = "Updating package";
         private const string _infoLabel = "Unity Cpp Project";
 
@@ -18,7 +18,7 @@ namespace UnityCpp.Editor.Project
         {
             float progress = 0F;
             
-            PackageInfo info = PackageInfo.FindForAssembly(typeof(NativeProjectUpdate).Assembly);
+            PackageInfo info = PackageInfo.FindForAssembly(typeof(NativePackageUpdate).Assembly);
             
             RemoveRequest removeRequest = Client.Remove(info.packageId);
             while (!removeRequest.IsCompleted)

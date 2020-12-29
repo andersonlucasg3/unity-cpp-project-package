@@ -9,8 +9,8 @@ namespace UnityCpp.Editor.Builds
 {
     public static class NativeProjectBuild
     {
-        private const string _buildProjectMenuItem = "Assets/UnityCpp/Project/Build/Build &B";
-        private const string _cleanProjectMenuItem = "Assets/UnityCpp/Project/Build/Clean &C";
+        private const string _buildProjectMenuItem = "Assets/UnityCpp/Build/Build &B";
+        private const string _cleanProjectMenuItem = "Assets/UnityCpp/Build/Clean &C";
         private const string _cppProjectPath = "CppSource";
         private const string _cmakeCachesPath = "cmake-build-debug";
         private const string _progressBarTitle = "C++";
