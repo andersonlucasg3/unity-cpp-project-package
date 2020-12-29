@@ -58,7 +58,7 @@ namespace UnityCpp.Editor.Project
             string gameSourcesPath = Path.Combine(projectPath, _gameSourcesPath);
 
             TextWriter writer = File.CreateText(_componentsSourcePath);
-            AddInclude(_componentsFileName, writer);
+            AddInclude($"{_componentsFileName}.h", writer);
             
             string[] files = Directory.GetFiles(gameSourcesPath, "*.h", SearchOption.AllDirectories);
             string[] filteredFiles = Array.FindAll(files, input => !input.Contains(_componentsFileName));
@@ -131,7 +131,7 @@ namespace UnityCpp.Editor.Project
 
             cmakeListsIncludePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(Directory.GetParent(relativeToPath).ToString(), "");
             if (cmakeListsIncludePath.StartsWith(Path.DirectorySeparatorChar.ToString())) cmakeListsIncludePath = cmakeListsIncludePath.Substring(1);
-            cmakeListsIncludePath = Path.Combine(cmakeListsIncludePath, fileName).Replace(Path.DirectorySeparatorChar.ToString(), "/");
+            cmakeListsIncludePath = Path.Combine(cmakeListsIncludePath, _fileNameWithoutExtension).Replace(Path.DirectorySeparatorChar.ToString(), "/");
 
             string headerFileContents = File.ReadAllText(filePath);
 
