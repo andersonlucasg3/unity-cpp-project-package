@@ -39,9 +39,9 @@ namespace UnityCpp.Editor.Project
 
         private static void WriteRegistrationSourceFile(string projectPath, out HeaderFileInfo[] headersInfos)
         {
-            void AddInclude(string headerName, TextWriter w)
+            void AddInclude(string headerPath, TextWriter w)
             {
-                w.WriteLine($"#include \"{headerName}.h\"");
+                w.WriteLine($"#include \"{headerPath}\"");
             }
             
             void AddRegisterCall(HeaderFileInfo headerFileInfo, TextWriter w)
@@ -68,7 +68,7 @@ namespace UnityCpp.Editor.Project
             
             foreach (HeaderFileInfo headerFileInfo in headersInfos)
             {
-                AddInclude(headerFileInfo.relativeFullPath, writer);
+                AddInclude(headerFileInfo.includePath, writer);
             }
             
             writer.WriteLine();
@@ -93,14 +93,11 @@ namespace UnityCpp.Editor.Project
             string cmakeListsContents = File.ReadAllText(cmakeListsPath);
 
             List<string> outputNames = new List<string>();
-            
-            string classesPath = _gameSourcesPath.Replace($"{_cppProjectPath}/", "");
-            
-            for (int index = 0; index < headersInfos.Count; index++)
+            foreach (HeaderFileInfo headerFileInfo in headersInfos)
             {
-                string className = headersInfos[index].fileNameWithoutExtension;
-                string headerFile = $"{classesPath}/{className}.h";
-                string sourceFile = $"{classesPath}/{className}.cpp";
+                string includePath = headerFileInfo.cmakeListsIncludePath;
+                string headerFile = $"{includePath}.h";
+                string sourceFile = $"{includePath}.cpp";
                 if (!cmakeListsContents.Contains(headerFile)) outputNames.Add($"\t\t{headerFile}");
                 if (!cmakeListsContents.Contains(sourceFile)) outputNames.Add($"\t\t{sourceFile}");
             }
@@ -113,27 +110,32 @@ namespace UnityCpp.Editor.Project
 
     internal readonly struct HeaderFileInfo
     {
-        internal string parentPath { get; }
-        internal string relativeParentPath { get; }
-        internal string fileName { get; }
+        private string parentPath { get; }
+        private string fileName { get; }
+        private string namespaceName { get; }
         internal string fileNameWithoutExtension { get; }
-        internal string namespaceName { get; }
-
-        internal string fullPath => Path.Combine(parentPath, fileName);
-        internal string relativeFullPath => Path.Combine(relativeParentPath, fileName);
+        
+        internal string includePath { get; }
+        internal string cmakeListsIncludePath { get; }
 
         internal string fullQualifiedClassName => string.IsNullOrEmpty(namespaceName) ? fileNameWithoutExtension : $"{namespaceName}::{fileNameWithoutExtension}";
 
-        public HeaderFileInfo(string filePath, string relativePath = "") : this()
+        public HeaderFileInfo(string filePath, string relativeToPath = "") : this()
         {
             parentPath = Directory.GetParent(filePath).ToString();
-            
-            relativeParentPath = string.IsNullOrEmpty(relativePath) ? parentPath : parentPath.Replace(relativePath, "");
-            
+
+            includePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(relativeToPath, "");
+            if (includePath.StartsWith(Path.PathSeparator.ToString())) includePath = includePath.Replace(Path.PathSeparator.ToString(), "");
+            includePath = includePath.Replace(Path.PathSeparator.ToString(), "/");
+
+            cmakeListsIncludePath = string.IsNullOrEmpty(relativeToPath) ? parentPath : parentPath.Replace(Directory.GetParent(relativeToPath).ToString(), "");
+            if (cmakeListsIncludePath.StartsWith(Path.PathSeparator.ToString())) cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.PathSeparator.ToString(), "");
+            cmakeListsIncludePath = cmakeListsIncludePath.Replace(Path.PathSeparator.ToString(), "/").Replace(".h", "");
+
             fileName = Path.GetFileName(filePath);
             fileNameWithoutExtension = fileName.Replace(".h", "");
             
-            string headerFileContents = File.ReadAllText(fullPath);
+            string headerFileContents = File.ReadAllText(filePath);
 
             namespaceName = SetupNamespaceName(headerFileContents);
         }
