@@ -124,7 +124,9 @@ namespace UnityCpp.Editor.Project
         public HeaderFileInfo(string filePath, string relativePath = "") : this()
         {
             parentPath = Directory.GetParent(filePath).ToString();
-            relativeParentPath = parentPath.Replace(relativePath, "");
+            
+            relativeParentPath = string.IsNullOrEmpty(relativePath) ? parentPath : parentPath.Replace(relativePath, "");
+            
             fileName = Path.GetFileName(filePath);
             fileNameWithoutExtension = fileName.Replace(".h", "");
             
